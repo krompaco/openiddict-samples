@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +40,7 @@ namespace Velusia.Server
                 .AddDefaultTokenProviders();
 
             // Fix to set 15 minute e-mail link expiry /JK
+            // https://www.scottbrady91.com/ASPNET-Identity/Implementing-Mediums-Passwordless-Authentication-using-ASPNET-Core-Identity
             services.Configure<DataProtectionTokenProviderOptions>(options => options.TokenLifespan = TimeSpan.FromMinutes(15));
 
             // Configure Identity to use the same JWT claims as OpenIddict instead
@@ -52,7 +53,7 @@ namespace Velusia.Server
                 options.ClaimsIdentity.RoleClaimType = Claims.Role;
 
                 // Require confirmation /JK
-                options.SignIn.RequireConfirmedAccount = true;
+                options.SignIn.RequireConfirmedEmail = true;
             });
 
             services.AddOpenIddict()

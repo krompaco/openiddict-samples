@@ -75,7 +75,6 @@ namespace Velusia.Server.Controllers
                     return View("Error", new ErrorViewModel
                     {
                         Error = "Error creating user",
-                        ErrorDescription = "",
                     });
                 }
 

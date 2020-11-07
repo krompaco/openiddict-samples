@@ -6,10 +6,11 @@
 
 <h1>@ViewData["Title"]</h1>
 
+<p>We will send you a link that is valid for 15 minutes.</p>
+
 <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" role="form">
-	<h2>Use your e-mail address to log in</h2>
 	<div class="form-group">
-		<label asp-for="Email" class="col-md-2 control-label"></label>
+		<label asp-for="Email" class="col-md-2 control-label">Your e-mail address</label>
 		<div class="col-md-10">
 			<input asp-for="Email" class="form-control" type="email" required />
 		</div>
