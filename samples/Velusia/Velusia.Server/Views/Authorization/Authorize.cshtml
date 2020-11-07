@@ -1,20 +1,24 @@
 ﻿@using Microsoft.Extensions.Primitives
 @model AuthorizeViewModel
 
-<div class="jumbotron">
-    <h1>Authorization</h1>
+@{
+	ViewData["Title"] = "Log out";
+}
 
-    <p class="lead text-left">Do you want to grant <strong>@Model.ApplicationName</strong> access to your data? (scopes requested: @Model.Scope)</p>
+<div class="">
+	<h1>@ViewData["Title"]</h1>
 
-    <form asp-controller="Authorization" asp-action="Authorize" method="post">
-        @* Flow the request parameters so they can be received by the Accept/Reject actions: *@
-        @foreach (var parameter in Context.Request.HasFormContentType ?
-            (IEnumerable<KeyValuePair<string, StringValues>>) Context.Request.Form : Context.Request.Query)
-        {
-            <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
-        }
+	<p class="lead text-left">Do you want to grant <strong>@Model.ApplicationName</strong> access to your data? (scopes requested: @Model.Scope)</p>
 
-        <input class="btn btn-lg btn-success" name="submit.Accept" type="submit" value="Yes" />
-        <input class="btn btn-lg btn-danger" name="submit.Deny" type="submit" value="No" />
-    </form>
+	<form asp-controller="Authorization" asp-action="Authorize" method="post">
+		@* Flow the request parameters so they can be received by the Accept/Reject actions: *@
+		@foreach (var parameter in Context.Request.HasFormContentType ?
+		   (IEnumerable<KeyValuePair<string, StringValues>>)Context.Request.Form : Context.Request.Query)
+		{
+			<input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+		}
+
+		<button class="btn btn-lg btn-success" name="submit.Accept" type="submit" value="Yes">Yes</button>
+		<button class="btn btn-lg btn-danger" name="submit.Deny" type="submit" value="No">No</button>
+	</form>
 </div>
