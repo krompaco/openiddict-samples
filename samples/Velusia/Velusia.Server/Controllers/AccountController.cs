@@ -86,7 +86,7 @@ namespace Velusia.Server.Controllers
                 }
 
                 var token = await _userManager.GenerateUserTokenAsync(user, "Default", "passwordless-auth");
-                var urlForEmail = Url.Action("ConfirmEmail", "Account", new { userid = user.Id, code = token }, this.Request.Scheme);
+                var urlForEmail = Url.Action("ConfirmEmail", "Account", new { userid = user.Id, code = token, returnurl = returnUrl }, this.Request.Scheme);
 
                 await _emailSender.SendEmailAsync(model.Email, "Signin link",
                     "Sign in by visiting this link: <a href=\"" + urlForEmail + "\">" + urlForEmail + "</a>");
@@ -259,7 +259,7 @@ namespace Velusia.Server.Controllers
         // GET: /Account/ConfirmEmail
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        public async Task<IActionResult> ConfirmEmail(string userId, string code, string returnUrl = null)
         {
             if (userId == null || code == null)
             {
@@ -306,7 +306,7 @@ namespace Velusia.Server.Controllers
 
                 if (result.Succeeded)
                 {
-                    return RedirectToLocal("/");
+                    return RedirectToLocal(returnUrl);
                 }
                 if (result.IsLockedOut)
                 {
