@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,9 @@ namespace Velusia.Server
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            // Fix to set 15 minute e-mail link expiry /JK
+            services.Configure<DataProtectionTokenProviderOptions>(options => options.TokenLifespan = TimeSpan.FromMinutes(15));
+
             // Configure Identity to use the same JWT claims as OpenIddict instead
             // of the legacy WS-Federation claims it uses by default (ClaimTypes),
             // which saves you from doing the mapping in your authorization controller.
@@ -46,6 +50,9 @@ namespace Velusia.Server
                 options.ClaimsIdentity.UserNameClaimType = Claims.Name;
                 options.ClaimsIdentity.UserIdClaimType = Claims.Subject;
                 options.ClaimsIdentity.RoleClaimType = Claims.Role;
+
+                // Require confirmation /JK
+                options.SignIn.RequireConfirmedAccount = true;
             });
 
             services.AddOpenIddict()
@@ -99,7 +106,7 @@ namespace Velusia.Server
                 });
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
-            services.AddTransient<ISmsSender, AuthMessageSender>();
+            //services.AddTransient<ISmsSender, AuthMessageSender>();
 
             // Register the worker responsible of seeding the database with the sample clients.
             // Note: in a real world application, this step should be part of a setup script.

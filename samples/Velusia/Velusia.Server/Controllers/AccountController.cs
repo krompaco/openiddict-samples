@@ -1,6 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Velusia.Server.Models;
 using Velusia.Server.Services;
 using Velusia.Server.ViewModels.Account;
@@ -8,16 +11,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Velusia.Server.ViewModels.Shared;
 
 namespace Velusia.Server.Controllers
 {
     [Authorize]
     public class AccountController : Controller
     {
+        private const string DummyPassword = "6d2cfde64418|49b2-a355@a873623f66f3!950E79DF-90ED43E1A9A5#D4EB8DF93336"; // JK
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
-        private readonly ISmsSender _smsSender;
         private readonly ApplicationDbContext _applicationDbContext;
         private static bool _databaseChecked;
 
@@ -25,13 +29,11 @@ namespace Velusia.Server.Controllers
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
-            ISmsSender smsSender,
             ApplicationDbContext applicationDbContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
-            _smsSender = smsSender;
             _applicationDbContext = applicationDbContext;
         }
 
@@ -56,26 +58,62 @@ namespace Velusia.Server.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+
+                if (user == null)
+                {
+                    // Setting two factor as enabled for all new users /JK
+                    var newUser = new ApplicationUser { UserName = model.Email, Email = model.Email, EmailConfirmed = false };
+                    var result = await _userManager.CreateAsync(newUser, DummyPassword);
+
+                    if (!result.Succeeded)
+                    {
+                        AddErrors(result);
+                    }
+                    else
+                    {
+                        user = await _userManager.FindByEmailAsync(model.Email);
+                    }
+                }
+
+                if (user == null)
+                {
+                    return View("Error", new ErrorViewModel
+                    {
+                        Error = "Error creating user",
+                        ErrorDescription = "",
+                    });
+                }
+
+                var token = await _userManager.GenerateUserTokenAsync(user, "Default", "passwordless-auth");
+                var urlForEmail = Url.Action("ConfirmEmail", "Account", new { userid = user.Id, code = token }, this.Request.Scheme);
+
+                await _emailSender.SendEmailAsync(model.Email, "Signin link",
+                    "Sign in by visiting this link: <a href=\"" + urlForEmail + "\">" + urlForEmail + "</a>");
+
+                return Content("Use URL: " + urlForEmail);
+
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-                if (result.Succeeded)
-                {
-                    return RedirectToLocal(returnUrl);
-                }
-                if (result.RequiresTwoFactor)
-                {
-                    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
-                }
-                if (result.IsLockedOut)
-                {
-                    return View("Lockout");
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return View(model);
-                }
+                //var result = await _signInManager.PasswordSignInAsync(model.Email, DummyPassword, model.RememberMe, lockoutOnFailure: false);
+
+                //if (result.Succeeded)
+                //{
+                //    return RedirectToLocal(returnUrl);
+                //}
+                //if (result.RequiresTwoFactor)
+                //{
+                //    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
+                //}
+                //if (result.IsLockedOut)
+                //{
+                //    return View("Lockout");
+                //}
+                //else
+                //{
+                //    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                //    return View(model);
+                //}
             }
 
             // If we got this far, something failed, redisplay form
@@ -103,17 +141,19 @@ namespace Velusia.Server.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                var result = await _userManager.CreateAsync(user, model.Password);
+                // Setting two factor as enabled for all new users /JK
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, TwoFactorEnabled = true };
+                var result = await _userManager.CreateAsync(user, DummyPassword);
                 if (result.Succeeded)
                 {
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
                     // Send an email with this link
-                    //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    //var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Context.Request.Scheme);
-                    //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
-                    //    "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
-                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    // Activating confirm e-mail /JK
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: this.Request.Scheme);
+                    await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
+                        "Please confirm your account by visiting this link: <a href=\"" + callbackUrl + "\">" + callbackUrl + "</a>");
+                    //await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToLocal(returnUrl);
                 }
                 AddErrors(result);
@@ -223,15 +263,62 @@ namespace Velusia.Server.Controllers
         {
             if (userId == null || code == null)
             {
-                return View("Error");
+                return View("Error", new ErrorViewModel
+                {
+                    Error = "Missing parameters",
+                    ErrorDescription = "",
+                });
             }
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return View("Error");
+                return View("Error", new ErrorViewModel
+                {
+                    Error = "No user found",
+                    ErrorDescription = "",
+                });
             }
-            var result = await _userManager.ConfirmEmailAsync(user, code);
-            return View(result.Succeeded ? "ConfirmEmail" : "Error");
+
+            var isValid = await _userManager.VerifyUserTokenAsync(user, "Default", "passwordless-auth", code);
+
+            if (isValid)
+            {
+                if (!user.EmailConfirmed)
+                {
+                    user.EmailConfirmed = true;
+                    var resultUpdatingEmailConfirmed = await _userManager.UpdateAsync(user);
+
+                    if (!resultUpdatingEmailConfirmed.Succeeded)
+                    {
+                        return View("Error", new ErrorViewModel
+                        {
+                            Error = "Error updating confirmed e-mail for user",
+                            ErrorDescription = "",
+                        });
+                    }
+                }
+
+                await _userManager.UpdateSecurityStampAsync(user);
+
+                // This doesn't count login failures towards account lockout
+                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
+                var result = await _signInManager.PasswordSignInAsync(user.Email, DummyPassword, true, lockoutOnFailure: false);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToLocal("/");
+                }
+                if (result.IsLockedOut)
+                {
+                    return View("Lockout");
+                }
+            }
+
+            return View("Error", new ErrorViewModel
+            {
+                Error = "Error with signin link",
+                ErrorDescription = "",
+            });
         }
 
         //
@@ -371,10 +458,6 @@ namespace Velusia.Server.Controllers
             {
                 await _emailSender.SendEmailAsync(await _userManager.GetEmailAsync(user), "Security Code", message);
             }
-            else if (model.SelectedProvider == "Phone")
-            {
-                await _smsSender.SendSmsAsync(await _userManager.GetPhoneNumberAsync(user), message);
-            }
 
             return RedirectToAction(nameof(VerifyCode), new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
         }
@@ -391,7 +474,8 @@ namespace Velusia.Server.Controllers
             {
                 return View("Error");
             }
-            return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
+            // Forcing false
+            return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = false });
         }
 
         //
