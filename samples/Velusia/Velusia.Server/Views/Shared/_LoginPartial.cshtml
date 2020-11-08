@@ -3,13 +3,14 @@
 
 @if (SignInManager.IsSignedIn(User))
 {
-	<p>Signed in as @UserManager.GetUserName(User)</p>
+	<div class="mt-8" role="navigation">
+		<h2 class="text-base text-gray-900">Signed in as <span class="font-bold">@UserManager.GetUserName(User)</span></h2>
 
-	<form asp-controller="Account" asp-action="LogOff" method="post" class="">
-		<button type="submit" class="">Sign out</button>
-	</form>
-}
-else
-{
-	<a asp-controller="Account" asp-action="Login">Log in</a>
+		@if (!Url.ActionContext.ActionDescriptor.DisplayName.Contains("AuthorizationController.Logout"))
+		{
+			<div class="text-sm">
+				<a asp-controller="Authorization" asp-action="Logout" class="@Css.Link">Sign out</a>
+			</div>
+		}
+	</div>
 }

@@ -74,7 +74,7 @@ namespace Velusia.Server.Controllers
                 {
                     return View("Error", new ErrorViewModel
                     {
-                        Error = "Error creating user",
+                        Error = "Error creating user.",
                     });
                 }
 
@@ -92,16 +92,6 @@ namespace Velusia.Server.Controllers
         }
 
         //
-        // POST: /Account/LogOff
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> LogOff()
-        {
-            await _signInManager.SignOutAsync();
-            return RedirectToAction(nameof(HomeController.Index), "Home");
-        }
-
-        //
         // GET: /Account/ConfirmEmail
         [HttpGet]
         [AllowAnonymous]
@@ -111,7 +101,7 @@ namespace Velusia.Server.Controllers
             {
                 return View("Error", new ErrorViewModel
                 {
-                    Error = "Missing parameters",
+                    Error = "Missing parameters.",
                 });
             }
             var user = await _userManager.FindByIdAsync(userId);
@@ -119,7 +109,7 @@ namespace Velusia.Server.Controllers
             {
                 return View("Error", new ErrorViewModel
                 {
-                    Error = "No user found",
+                    Error = "No user found.",
                 });
             }
 
@@ -136,7 +126,7 @@ namespace Velusia.Server.Controllers
                     {
                         return View("Error", new ErrorViewModel
                         {
-                            Error = "Error updating confirmed e-mail for user",
+                            Error = "Error updating confirmed e-mail for user.",
                         });
                     }
                 }
@@ -159,7 +149,7 @@ namespace Velusia.Server.Controllers
 
             return View("Error", new ErrorViewModel
             {
-                Error = "Error with signin link",
+                Error = "Error with signin link.",
             });
         }
 

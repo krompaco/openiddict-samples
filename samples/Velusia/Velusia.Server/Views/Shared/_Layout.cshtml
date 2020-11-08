@@ -8,14 +8,18 @@
 	<link href="/dist/styles.css" rel="stylesheet" asp-append-version="true" />
 </head>
 <body>
-	<div class="" role="main">
-		@RenderBody()
-	</div>
-	<div class="" role="navigation">
-		@await Html.PartialAsync("_LoginPartial")
-	</div>
-	<div class="" role="contentinfo">
-		&copy; 2015-@DateTime.UtcNow.Year - <a asp-controller="Home" asp-action="Index" class="navbar-brand">Velusia.Server</a>
+	<div class="sm:min-h-screen sm:bg-gray-100 sm:flex sm:flex-col sm:justify-center sm:py-12 sm:px-6 lg:px-8">
+		<div class="sm:mx-auto sm:w-full sm:max-w-xl">
+			<div class="bg-white py-8 px-4 sm:shadow sm:px-10">
+				<div role="main">
+					@RenderBody()
+				</div>
+				@await Html.PartialAsync("_LoginPartial")
+				<div class="mt-8 text-gray-600 text-sm" role="contentinfo">
+					&copy; 2015-@DateTime.UtcNow.Year - <a asp-controller="Home" asp-action="Index" class="@Css.Link">Velusia.Server</a>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

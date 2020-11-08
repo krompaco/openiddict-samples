@@ -1,9 +1,16 @@
-﻿@{
-    ViewData["Title"] = "Home";
+﻿@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+	ViewData["Title"] = "Welcome to our sign-in site";
 }
 
-<div class="prose">
+<div class="@Css.Prose">
 	<h1>@ViewData["Title"]</h1>
-	<p class="lead">Some intro text.</p>
-	<p>A paragraph.</p>
+	<p class="lead">You are now on the root page which is rarely shown.</p>
+	<p>Most likely you want to return to where you came from.</p>
+
+	@if (!SignInManager.IsSignedIn(User))
+	{
+		<p>You can also <a asp-controller="Account" asp-action="Login">sign in</a> to not have to do it again when you return next time.</p>
+	}
 </div>

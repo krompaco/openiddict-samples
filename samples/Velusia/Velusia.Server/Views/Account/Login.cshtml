@@ -1,23 +1,23 @@
 ﻿@model LoginViewModel
 
 @{
-	ViewData["Title"] = "Log in";
+	ViewData["Title"] = "Start new sign-in";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="@Css.Prose">
+	<h1>@ViewData["Title"]</h1>
 
-<p>We will send you a link that is valid for 15 minutes.</p>
+	<p>We will e-mail you a sign-in link that is valid for 15 minutes.</p>
+</div>
 
-<form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" role="form">
+<form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="mt-8">
 	<div class="form-group">
-		<label asp-for="Email" class="col-md-2 control-label">Your e-mail address</label>
-		<div class="col-md-10">
-			<input asp-for="Email" class="form-control" type="email" required />
+		<label asp-for="Email" class="block text-sm font-medium leading-5 text-gray-700">E-mail address</label>
+		<div class="mt-2">
+			<input asp-for="Email" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight" type="email" required placeholder="Enter your e-mail address" />
 		</div>
 	</div>
-	<div class="form-group">
-		<div class="col-md-offset-2 col-md-10">
-			<button type="submit" class="btn btn-default">Send signin link</button>
-		</div>
+	<div class="mt-2">
+		@await Html.PartialAsync("_ButtonPartial", new ButtonViewModel { ButtonText = "Send new sign-in link" })
 	</div>
 </form>
