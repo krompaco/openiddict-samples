@@ -1,0 +1,65 @@
+@font-face {
+	font-family: 'Inter var';
+	font-weight: 100 900;
+	font-display: swap;
+	font-style: normal;
+	font-named-instance: 'Regular';
+	src: url('inter-roman-var.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Inter var';
+	font-weight: 100 900;
+	font-display: swap;
+	font-style: italic;
+	font-named-instance: 'Italic';
+	src: url('inter-italic-var.woff2') format('woff2');
+}
+
+@tailwind base;
+
+@tailwind components;
+
+.iframe-wrapper {
+	position: relative;
+	overflow: hidden;
+	padding-top: 56.25%;
+}
+.iframe-wrapper iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+.table-wrapper {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+.prose a, .prose a:link, .prose a:visited {
+	@apply text-blue-600 underline;
+}
+.prose a:hover, .prose a:focus, .prose a:active {
+	@apply text-red-600 underline;
+}
+.single.prose p {
+	@apply max-w-4xl;
+}
+.prose h2 {
+	@apply tracking-tight font-bold;
+}
+.prose h3 {
+	@apply font-bold;
+}
+.prose h4 {
+	@apply font-bold;
+}
+.prose h5 {
+	@apply font-semibold;
+}
+.prose h6 {
+	@apply font-semibold italic;
+}
+
+@tailwind utilities;
