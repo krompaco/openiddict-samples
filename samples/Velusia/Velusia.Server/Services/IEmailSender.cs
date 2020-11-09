@@ -4,6 +4,6 @@ namespace Velusia.Server.Services
 {
     public interface IEmailSender
     {
-        Task SendEmailAsync(string emailAddress, string subject, string message);
+        Task SendLinkEmailAsync(string emailAddress, string subject, string signInLink);
     }
 }

@@ -12,9 +12,9 @@
 
 <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="mt-8">
 	<div class="form-group">
-		<label asp-for="Email" class="block text-sm font-medium leading-5 text-gray-700">E-mail address</label>
+		<label asp-for="Email" class="block text-base text-gray-900">E-mail address</label>
 		<div class="mt-2">
-			<input asp-for="Email" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight" type="email" required placeholder="Enter your e-mail address" />
+			<input asp-for="Email" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:outline-black" type="email" required placeholder="Enter your e-mail address" />
 		</div>
 	</div>
 	<div class="mt-2">

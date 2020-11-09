@@ -38,10 +38,13 @@
 }
 
 .prose a, .prose a:link, .prose a:visited {
-	@apply text-blue-600 underline;
+	@apply text-blue-700 underline;
 }
 .prose a:hover, .prose a:focus, .prose a:active {
-	@apply text-red-600 underline;
+	@apply text-red-700 underline;
+}
+.prose a:focus {
+	@apply outline-none outline-black;
 }
 .single.prose p {
 	@apply max-w-4xl;

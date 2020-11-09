@@ -9,7 +9,6 @@ using Velusia.Server.ViewModels.Shared;
 
 namespace Velusia.Server.Controllers
 {
-    [Authorize]
     public class AccountController : Controller
     {
         private const string DummyPassword = "6d2cfde64418|49b2-a355@a873623f66f3!950E79DF-90ED43E1A9A5#D4EB8DF93336"; // JK
@@ -32,9 +31,16 @@ namespace Velusia.Server.Controllers
         }
 
         //
+        // GET: /Account/LinkSent
+        [HttpGet]
+        public IActionResult LinkSent()
+        {
+            return View();
+        }
+
+        //
         // GET: /Account/Login
         [HttpGet]
-        [AllowAnonymous]
         public IActionResult Login(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -44,7 +50,6 @@ namespace Velusia.Server.Controllers
         //
         // POST: /Account/Login
         [HttpPost]
-        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
@@ -79,12 +84,14 @@ namespace Velusia.Server.Controllers
                 }
 
                 var token = await _userManager.GenerateUserTokenAsync(user, "Default", "passwordless-auth");
-                var urlForEmail = Url.Action("ConfirmEmail", "Account", new { userid = user.Id, code = token, returnurl = returnUrl }, this.Request.Scheme);
+                var linkForEmail = Url.Action("ConfirmEmail", "Account", new { userid = user.Id, code = token, returnurl = returnUrl }, this.Request.Scheme);
 
-                await _emailSender.SendEmailAsync(model.Email, "Signin link",
-                    "Sign in by visiting this link: <a href=\"" + urlForEmail + "\">" + urlForEmail + "</a>");
+                await _emailSender.SendLinkEmailAsync(
+                    model.Email,
+                    "Sign-in link",
+                    linkForEmail);
 
-                return Content("Use URL: " + urlForEmail);
+                return RedirectToAction("LinkSent");
             }
 
             // If we got this far, something failed, redisplay form
@@ -94,7 +101,6 @@ namespace Velusia.Server.Controllers
         //
         // GET: /Account/ConfirmEmail
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userId, string code, string returnUrl = null)
         {
             if (userId == null || code == null)
@@ -143,7 +149,10 @@ namespace Velusia.Server.Controllers
                 }
                 if (result.IsLockedOut)
                 {
-                    return View("Lockout");
+                    return View("Error", new ErrorViewModel
+                    {
+                        Error = "This account has been locked out, please try again later.",
+                    });
                 }
             }
 

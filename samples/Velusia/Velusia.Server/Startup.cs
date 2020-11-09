@@ -106,8 +106,7 @@ namespace Velusia.Server
                     options.UseAspNetCore();
                 });
 
-            services.AddTransient<IEmailSender, AuthMessageSender>();
-            //services.AddTransient<ISmsSender, AuthMessageSender>();
+            services.AddTransient<IEmailSender, DummyConsoleEmailSender>();
 
             // Register the worker responsible of seeding the database with the sample clients.
             // Note: in a real world application, this step should be part of a setup script.
